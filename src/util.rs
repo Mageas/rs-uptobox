@@ -18,7 +18,7 @@ where
             Ok(r) => Err(Error::ParseResponse(
                 r.status_code,
                 r.message,
-                r.data.unwrap_or(String::new()),
+                r.data.unwrap_or_default(),
             )),
             Err(_) => Err(Error::UnknownParseResponse(e)),
         },

@@ -19,7 +19,7 @@ pub use model::get_files::*;
 
 use util::deserialize;
 
-const BASE_URL: &'static str = "https://uptobox.com/api/";
+const BASE_URL: &str = "https://uptobox.com/api/";
 
 pub struct Uptobox {
     client: Client,
@@ -34,7 +34,7 @@ impl Uptobox {
         let response = self
             .get(
                 "user/files",
-                serde_json::to_value(get_files).map_err(|e| Error::ParseInput(e))?,
+                serde_json::to_value(get_files).map_err(Error::ParseInput)?,
             )
             .await?;
 
@@ -48,7 +48,7 @@ impl Uptobox {
         let response = self
             .patch(
                 "user/files",
-                serde_json::to_value(update_file).map_err(|e| Error::ParseInput(e))?,
+                serde_json::to_value(update_file).map_err(Error::ParseInput)?,
             )
             .await?;
 
@@ -89,7 +89,7 @@ impl Uptobox {
                 Err(Error::ParseResponse(
                     r.status_code,
                     r.data,
-                    r.message.unwrap_or(String::new()),
+                    r.message.unwrap_or_default(),
                 ))
             }
         })?
@@ -162,7 +162,7 @@ impl Uptobox {
             .json(&body)
             .send()
             .await
-            .map_err(|e| Error::HttpRequest(e))?;
+            .map_err(Error::HttpRequest)?;
 
         self.parse_body(res).await
     }
@@ -175,7 +175,7 @@ impl Uptobox {
             .query(&params)
             .send()
             .await
-            .map_err(|e| Error::HttpRequest(e))?;
+            .map_err(Error::HttpRequest)?;
 
         self.parse_body(res).await
     }
@@ -197,7 +197,7 @@ impl Uptobox {
     /// If the response status is 200, it returns the json value, otherwise it returns an Error::HttpResponseCode variant with the status code.
     async fn parse_body(&self, res: Response) -> UptoboxResult<String> {
         if res.status() == 200 {
-            Ok(res.text().await.map_err(|e| Error::HttpRequest(e))?)
+            Ok(res.text().await.map_err(Error::HttpRequest)?)
         } else {
             Err(Error::HttpResponseCode(res.status().as_u16()))
         }
