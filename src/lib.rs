@@ -12,7 +12,6 @@ mod util;
 
 pub use input::get_files::{GetFiles, OrderBy, OrderDir};
 pub use input::update_file::UpdateFile;
-// pub use input::update_public::UpdatePublic;
 
 pub use model::generic::*;
 pub use model::get_files::*;
