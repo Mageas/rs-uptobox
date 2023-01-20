@@ -1,8 +1,12 @@
 use serde::Deserialize;
 
+use crate::util::DeserializeCheck;
+
 #[derive(Deserialize, Debug)]
 pub struct GetFilesResponseWrapper {
+    pub status_code: usize,
     pub data: GetFilesResponse,
+    pub message: Option<String>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -58,4 +62,18 @@ pub struct GetFilesFiles {
 
 fn default_string() -> String {
     "//".to_string()
+}
+
+impl DeserializeCheck for GetFilesResponseWrapper {
+    fn status_code(&self) -> usize {
+        self.status_code
+    }
+
+    fn data(&self) -> String {
+        String::new()
+    }
+
+    fn message(&self) -> Option<String> {
+        self.message.to_owned()
+    }
 }

@@ -10,10 +10,17 @@ pub struct ErrorDeserialize {
 
 pub fn deserialize<'de, T>(json: &'de str) -> UptoboxResult<T>
 where
-    T: serde::Deserialize<'de>,
+    T: serde::Deserialize<'de> + DeserializeCheck,
 {
     match serde_json::from_str::<T>(json) {
-        Ok(r) => Ok(r),
+        Ok(r) => match r.status_code() {
+            0 => Ok(r),
+            _ => Err(Error::ParseResponse(
+                r.status_code(),
+                String::new(), // r.data(),
+                r.message().unwrap_or_default(),
+            )),
+        },
         Err(e) => match serde_json::from_str::<ErrorDeserialize>(json) {
             Ok(r) => Err(Error::ParseResponse(
                 r.status_code,
@@ -23,4 +30,10 @@ where
             Err(_) => Err(Error::UnknownParseResponse(e)),
         },
     }
+}
+
+pub trait DeserializeCheck {
+    fn status_code(&self) -> usize;
+    fn data(&self) -> String;
+    fn message(&self) -> Option<String>;
 }

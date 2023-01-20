@@ -1,8 +1,10 @@
 #![allow(dead_code)]
 
+// TODO: Refactor the trait to handle the error message
+
 use json_patch::merge as json_merge;
 
-use reqwest::{Client, Response};
+use reqwest::{Client, Method, Response};
 use serde_json::{json, Value};
 
 mod input;
@@ -77,21 +79,11 @@ impl Uptobox {
         let response = self
             .patch(
                 "user/files",
-                json!({ "fld_id": fld_id, "destination_fld_id": destination_fld_id, "action": "move"}),
+                json!({ "fld_id": fld_id, "destination_fld_id": destination_fld_id, "action": "move" }),
             )
             .await?;
 
-        deserialize::<GenericMessageResponseWrapper>(&response).map(|r| {
-            if r.status_code == 0 {
-                Ok(r.data)
-            } else {
-                Err(Error::ParseResponse(
-                    r.status_code,
-                    r.data,
-                    r.message.unwrap_or_default(),
-                ))
-            }
-        })?
+        deserialize::<GenericMessageResponseWrapper>(&response).map(|r| r.data)
     }
 
     /// Move one or multiple files to another location
@@ -103,14 +95,13 @@ impl Uptobox {
         let response = self
             .patch(
                 "user/files",
-                json!({ "file_codes": file_codes.join(","), "destination_fld_id": destination_fld_id, "action": "move"}),
+                json!({ "file_codes": file_codes.join(","), "destination_fld_id": destination_fld_id, "action": "move" }),
             )
             .await?;
 
         deserialize::<GenericUpdatedResponseWrapper>(&response).map(|r| r.data.updated)
     }
 
-    // TODO: "{\"success\":false,\"data\":\"Could not create alias : unknown file\"}
     /// Copy one or multiple files to another location
     pub async fn copy_files(
         &self,
@@ -120,11 +111,43 @@ impl Uptobox {
         let response = self
             .patch(
                 "user/files",
-                json!({ "file_codes": file_codes.join(","), "destination_fld_id": destination_fld_id, "action": "copy"}),
+                json!({ "file_codes": file_codes.join(","), "destination_fld_id": destination_fld_id, "action": "copy" }),
             )
             .await?;
 
         deserialize::<GenericUpdatedResponseWrapper>(&response).map(|r| r.data.updated)
+    }
+
+    /// Rename a folder
+    pub async fn rename_folder(
+        &self,
+        fld_id: usize,
+        new_name: impl Into<String>,
+    ) -> UptoboxResult<String> {
+        let response = self
+            .patch(
+                "user/files",
+                json!({ "fld_id": fld_id, "new_name": new_name.into() }),
+            )
+            .await?;
+
+        deserialize::<GenericMessageResponseWrapper>(&response).map(|r| r.data)
+    }
+
+    /// Create a folder
+    pub async fn create_folder(
+        &self,
+        path: impl Into<String>,
+        name: impl Into<String>,
+    ) -> UptoboxResult<String> {
+        let response = self
+            .put(
+                "user/files",
+                json!({ "path": path.into(), "name": name.into() }),
+            )
+            .await?;
+
+        deserialize::<GenericMessageResponseWrapper>(&response).map(|r| r.data)
     }
 }
 
@@ -136,28 +159,28 @@ impl Uptobox {
         }
     }
 
-    // /// Post a route
-    // async fn post(&self, path: impl Into<String>, body: Value) -> UptoboxResult<String> {
-    //     let body = self.add_token_auth(body);
+    /// Make a Put request
+    async fn put(&self, path: impl Into<String>, body: Value) -> UptoboxResult<String> {
+        self.req(Method::PUT, path, body).await
+    }
 
-    //     let res = self
-    //         .client
-    //         .post(format!("{BASE_URL}{}", path.into()))
-    //         .json(&body)
-    //         .send()
-    //         .await
-    //         .map_err(|e| Error::HttpRequest(e))?;
-
-    //     self.parse_body(res).await
-    // }
-
-    /// Patch a route
+    /// Make a Patch request
     async fn patch(&self, path: impl Into<String>, body: Value) -> UptoboxResult<String> {
+        self.req(Method::PATCH, path, body).await
+    }
+
+    /// Default implementation of request
+    async fn req(
+        &self,
+        method: Method,
+        path: impl Into<String>,
+        body: Value,
+    ) -> UptoboxResult<String> {
         let body = self.add_token_auth(body);
 
         let res = self
             .client
-            .patch(format!("{BASE_URL}{}", path.into()))
+            .request(method, format!("{BASE_URL}{}", path.into()))
             .json(&body)
             .send()
             .await
