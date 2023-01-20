@@ -12,9 +12,12 @@ mod util;
 
 pub use input::get_files::{GetFiles, OrderBy, OrderDir};
 pub use input::update_file::UpdateFile;
+// pub use input::update_public::UpdatePublic;
 
 pub use model::generic::*;
 pub use model::get_files::*;
+
+use util::deserialize;
 
 const BASE_URL: &'static str = "https://uptobox.com/api/";
 
@@ -35,15 +38,13 @@ impl Uptobox {
             )
             .await?;
 
-        serde_json::from_str::<GetFilesResponseWrapper>(&response)
-            .map(|r| r.data)
-            .map_err(|e| Error::ParseResponse(e))
+        deserialize::<GetFilesResponseWrapper>(&response).map(|r| r.data)
     }
 
     /// Update file informations
     ///
     /// The following informations can be updated. Filename, Description, Password, Public
-    pub async fn update_file(&self, update_file: &UpdateFile) -> UptoboxResult<bool> {
+    pub async fn update_file(&self, update_file: &UpdateFile) -> UptoboxResult<usize> {
         let response = self
             .patch(
                 "user/files",
@@ -51,9 +52,80 @@ impl Uptobox {
             )
             .await?;
 
-        serde_json::from_str::<GenericResponseWrapper>(&response)
-            .map(|r| r.data.updated)
-            .map_err(|e| Error::ParseResponse(e))
+        dbg!(&response);
+
+        deserialize::<GenericUpdatedResponseWrapper>(&response).map(|r| r.data.updated)
+    }
+
+    /// Not working
+    pub async fn update_public(&self, file_codes: Vec<&str>, public: bool) -> UptoboxResult<usize> {
+        let response = self
+            .patch(
+                "user/files",
+                json!({ "file_codes": file_codes.join(","), "public": public }),
+            )
+            .await?;
+
+        deserialize::<GenericUpdatedResponseWrapper>(&response).map(|r| r.data.updated)
+    }
+
+    /// Move a folder to another location
+    pub async fn move_folder(
+        &self,
+        fld_id: usize,
+        destination_fld_id: usize,
+    ) -> UptoboxResult<String> {
+        let response = self
+            .patch(
+                "user/files",
+                json!({ "fld_id": fld_id, "destination_fld_id": destination_fld_id, "action": "move"}),
+            )
+            .await?;
+
+        deserialize::<GenericMessageResponseWrapper>(&response).map(|r| {
+            if r.status_code == 0 {
+                Ok(r.data)
+            } else {
+                Err(Error::ParseResponse(
+                    r.status_code,
+                    r.data,
+                    r.message.unwrap_or(String::new()),
+                ))
+            }
+        })?
+    }
+
+    /// Move one or multiple files to another location
+    pub async fn move_files(
+        &self,
+        file_codes: Vec<&str>,
+        destination_fld_id: usize,
+    ) -> UptoboxResult<usize> {
+        let response = self
+            .patch(
+                "user/files",
+                json!({ "file_codes": file_codes.join(","), "destination_fld_id": destination_fld_id, "action": "move"}),
+            )
+            .await?;
+
+        deserialize::<GenericUpdatedResponseWrapper>(&response).map(|r| r.data.updated)
+    }
+
+    // TODO: "{\"success\":false,\"data\":\"Could not create alias : unknown file\"}
+    /// Copy one or multiple files to another location
+    pub async fn copy_files(
+        &self,
+        file_codes: Vec<&str>,
+        destination_fld_id: usize,
+    ) -> UptoboxResult<usize> {
+        let response = self
+            .patch(
+                "user/files",
+                json!({ "file_codes": file_codes.join(","), "destination_fld_id": destination_fld_id, "action": "copy"}),
+            )
+            .await?;
+
+        deserialize::<GenericUpdatedResponseWrapper>(&response).map(|r| r.data.updated)
     }
 }
 
@@ -65,20 +137,20 @@ impl Uptobox {
         }
     }
 
-    /// Post a route
-    async fn post(&self, path: impl Into<String>, body: Value) -> UptoboxResult<String> {
-        let body = self.add_token_auth(body);
+    // /// Post a route
+    // async fn post(&self, path: impl Into<String>, body: Value) -> UptoboxResult<String> {
+    //     let body = self.add_token_auth(body);
 
-        let res = self
-            .client
-            .post(format!("{BASE_URL}{}", path.into()))
-            .form(&body)
-            .send()
-            .await
-            .map_err(|e| Error::HttpRequest(e))?;
+    //     let res = self
+    //         .client
+    //         .post(format!("{BASE_URL}{}", path.into()))
+    //         .json(&body)
+    //         .send()
+    //         .await
+    //         .map_err(|e| Error::HttpRequest(e))?;
 
-        self.parse_body(res).await
-    }
+    //     self.parse_body(res).await
+    // }
 
     /// Patch a route
     async fn patch(&self, path: impl Into<String>, body: Value) -> UptoboxResult<String> {
@@ -87,7 +159,7 @@ impl Uptobox {
         let res = self
             .client
             .patch(format!("{BASE_URL}{}", path.into()))
-            .form(&body)
+            .json(&body)
             .send()
             .await
             .map_err(|e| Error::HttpRequest(e))?;
@@ -137,8 +209,11 @@ pub enum Error {
     #[error("Parse the input")]
     ParseInput(#[source] serde_json::Error),
 
-    #[error("Parse the response")]
-    ParseResponse(#[source] serde_json::Error),
+    #[error("status_code: {0}, message: {1}, data: {2}")]
+    ParseResponse(usize, String, String),
+
+    #[error("Unable to parse the response with an unknown error")]
+    UnknownParseResponse(#[source] serde_json::Error),
 
     #[error("Bad response")]
     HttpRequest(#[source] reqwest::Error),
