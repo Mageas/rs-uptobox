@@ -149,6 +149,24 @@ impl Uptobox {
 
         deserialize::<GenericMessageResponseWrapper>(&response).map(|r| r.data)
     }
+
+    /// Delete one or multiple files
+    pub async fn delete_files(&self, file_codes: Vec<&str>) -> UptoboxResult<usize> {
+        let response = self
+            .delete("user/files", json!({ "file_codes": file_codes.join(",") }))
+            .await?;
+
+        deserialize::<GenericUpdatedResponseWrapper>(&response).map(|r| r.data.updated)
+    }
+
+    /// Delete a folder
+    pub async fn delete_folder(&self, fld_id: usize) -> UptoboxResult<String> {
+        let response = self
+            .delete("user/files", json!({ "fld_id": fld_id }))
+            .await?;
+
+        deserialize::<GenericMessageResponseWrapper>(&response).map(|r| r.data)
+    }
 }
 
 impl Uptobox {
@@ -157,6 +175,11 @@ impl Uptobox {
             client: Client::new(),
             key,
         }
+    }
+
+    /// Make a Delete request
+    async fn delete(&self, path: impl Into<String>, body: Value) -> UptoboxResult<String> {
+        self.req(Method::DELETE, path, body).await
     }
 
     /// Make a Put request

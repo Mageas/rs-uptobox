@@ -15,11 +15,14 @@ where
     match serde_json::from_str::<T>(json) {
         Ok(r) => match r.status_code() {
             0 => Ok(r),
-            _ => Err(Error::ParseResponse(
-                r.status_code(),
-                String::new(), // r.data(),
-                r.message().unwrap_or_default(),
-            )),
+            _ => match serde_json::from_str::<ErrorDeserialize>(json) {
+                Ok(r) => Err(Error::ParseResponse(
+                    r.status_code,
+                    r.message,
+                    r.data.unwrap_or_default(),
+                )),
+                Err(e) => Err(Error::UnknownParseResponse(e)),
+            },
         },
         Err(e) => match serde_json::from_str::<ErrorDeserialize>(json) {
             Ok(r) => Err(Error::ParseResponse(

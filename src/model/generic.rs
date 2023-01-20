@@ -4,6 +4,7 @@ use crate::util::DeserializeCheck;
 
 #[derive(Deserialize, Debug)]
 pub struct GenericUpdatedResponseWrapper {
+    #[serde(alias = "statusCode")]
     pub status_code: usize,
     pub data: GenericUpdatedResponse,
     pub message: Option<String>,
@@ -11,6 +12,7 @@ pub struct GenericUpdatedResponseWrapper {
 
 #[derive(Deserialize, Debug)]
 pub struct GenericUpdatedResponse {
+    #[serde(alias = "deleted")]
     pub updated: usize,
 }
 
