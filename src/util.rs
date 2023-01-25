@@ -37,6 +37,4 @@ where
 
 pub trait DeserializeCheck {
     fn status_code(&self) -> usize;
-    fn data(&self) -> String;
-    fn message(&self) -> Option<String>;
 }

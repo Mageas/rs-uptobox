@@ -3,7 +3,8 @@ use serde::Deserialize;
 use crate::util::DeserializeCheck;
 
 #[derive(Deserialize, Debug)]
-pub struct GetFilesResponseWrapper {
+#[serde(rename_all = "camelCase")]
+pub(crate) struct GetFilesResponseWrapper {
     pub status_code: usize,
     pub data: GetFilesResponse,
     pub message: Option<String>,
@@ -12,52 +13,52 @@ pub struct GetFilesResponseWrapper {
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct GetFilesResponse {
-    current_folder: GetFilesCurrentFolder,
-    folders: Vec<GetFilesFolders>,
-    files: Vec<GetFilesFiles>,
-    page_count: usize,
-    total_file_count: usize,
-    total_file_size: usize,
+    pub current_folder: GetFilesCurrentFolder,
+    pub folders: Vec<GetFilesFolders>,
+    pub files: Vec<GetFilesFiles>,
+    pub page_count: usize,
+    pub total_file_count: usize,
+    pub total_file_size: usize,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct GetFilesCurrentFolder {
     #[serde(rename = "fileCount")]
-    file_count: usize,
-    fld_id: usize,
+    pub file_count: usize,
+    pub fld_id: usize,
     #[serde(default = "default_string")]
-    fld_name: String,
-    fld_parent_id: Option<usize>,
-    hash: String,
+    pub fld_name: String,
+    pub fld_parent_id: Option<usize>,
+    pub hash: String,
     #[serde(default = "default_string")]
-    name: String,
+    pub name: String,
     #[serde(rename = "totalFileSize")]
-    total_file_size: usize,
+    pub total_file_size: usize,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct GetFilesFolders {
-    fld_id: usize,
-    fld_name: String,
-    hash: String,
-    name: String,
+    pub fld_id: usize,
+    pub fld_name: String,
+    pub hash: String,
+    pub name: String,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct GetFilesFiles {
-    file_code: String,
-    file_created: String,
-    file_descr: String,
-    file_downloads: usize,
-    file_last_download: String,
-    file_name: String,
-    file_password: String,
-    file_public: usize,
-    file_size: usize,
-    id: Option<usize>,
-    last_stream: String,
-    nb_stream: usize,
-    transcoded: Option<usize>,
+    pub file_code: String,
+    pub file_created: String,
+    pub file_descr: String,
+    pub file_downloads: usize,
+    pub file_last_download: String,
+    pub file_name: String,
+    pub file_password: String,
+    pub file_public: usize,
+    pub file_size: usize,
+    pub id: Option<usize>,
+    pub last_stream: String,
+    pub nb_stream: usize,
+    pub transcoded: Option<usize>,
 }
 
 fn default_string() -> String {
@@ -67,13 +68,5 @@ fn default_string() -> String {
 impl DeserializeCheck for GetFilesResponseWrapper {
     fn status_code(&self) -> usize {
         self.status_code
-    }
-
-    fn data(&self) -> String {
-        String::new()
-    }
-
-    fn message(&self) -> Option<String> {
-        self.message.to_owned()
     }
 }

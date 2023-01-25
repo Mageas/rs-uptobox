@@ -1,7 +1,5 @@
 #![allow(dead_code)]
 
-// TODO: Refactor the trait to handle the error message
-
 use json_patch::merge as json_merge;
 
 use reqwest::{Client, Method, Response};
@@ -9,16 +7,25 @@ use serde_json::{json, Value};
 
 mod input;
 mod model;
-
 mod util;
 
-pub use input::get_files::{GetFiles, OrderBy, OrderDir};
-pub use input::update_file::UpdateFile;
-
-pub use model::generic::*;
-pub use model::get_files::*;
-
 use util::deserialize;
+
+// TODO: Check if all fields are accessible with the public API
+
+pub use input::get_files::{GetFiles, OrderBy, OrderDir};
+pub use input::get_files_from_public_folder::GetFilesFromPublicFolder;
+pub use input::update_file::UpdateFile;
+pub use model::get_files::GetFilesResponse;
+pub use model::get_files_from_public_folder::GetFilesFromPublicFolderResponse;
+pub use model::get_files_informations::GetFilesInformationsResponse;
+pub use model::get_upload_url::GetUploadUrlResponse;
+
+use model::generic::{GenericMessageResponseWrapper, GenericUpdatedResponseWrapper};
+use model::get_files::GetFilesResponseWrapper;
+use model::get_files_from_public_folder::GetFilesFromPublicFolderResponseWrapper;
+use model::get_files_informations::GetFilesInformationsResponseWrapper;
+use model::get_upload_url::GetUploadUrlResponseWrapper;
 
 const BASE_URL: &str = "https://uptobox.com/api/";
 
@@ -39,6 +46,8 @@ impl Uptobox {
             )
             .await?;
 
+        dbg!(&response);
+
         deserialize::<GetFilesResponseWrapper>(&response).map(|r| r.data)
     }
 
@@ -52,8 +61,6 @@ impl Uptobox {
                 serde_json::to_value(update_file).map_err(Error::ParseInput)?,
             )
             .await?;
-
-        dbg!(&response);
 
         deserialize::<GenericUpdatedResponseWrapper>(&response).map(|r| r.data.updated)
     }
@@ -166,6 +173,42 @@ impl Uptobox {
             .await?;
 
         deserialize::<GenericMessageResponseWrapper>(&response).map(|r| r.data)
+    }
+
+    /// Retrieve file informations
+    ///
+    /// For each file code provided, you can add a password separated by ':' For example : filecode1:password1,filecode2:password2
+    pub async fn get_files_informations(
+        &self,
+        file_codes: Vec<&str>,
+    ) -> UptoboxResult<Vec<GetFilesInformationsResponse>> {
+        let response = self
+            .public_get("user/public", json!({ "fileCodes": file_codes.join(",") }))
+            .await?;
+
+        deserialize::<GetFilesInformationsResponseWrapper>(&response).map(|r| r.data.list)
+    }
+
+    /// Retrieve files in public folder
+    pub async fn get_files_from_public_folder(
+        &self,
+        get_files_from_public_folder: &GetFilesFromPublicFolder,
+    ) -> UptoboxResult<Vec<GetFilesFromPublicFolderResponse>> {
+        let response = self
+            .public_get(
+                "user/public",
+                serde_json::to_value(get_files_from_public_folder).map_err(Error::ParseInput)?,
+            )
+            .await?;
+
+        deserialize::<GetFilesFromPublicFolderResponseWrapper>(&response).map(|r| r.data.list)
+    }
+
+    /// Retrieve an upload url
+    pub async fn get_upload_url(&self) -> UptoboxResult<GetUploadUrlResponse> {
+        let response = self.get("upload", json!({})).await?;
+
+        deserialize::<GetUploadUrlResponseWrapper>(&response).map(|r| r.data)
     }
 }
 
