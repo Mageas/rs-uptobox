@@ -1,8 +1,6 @@
-use std::fmt;
-
 use serde::Serialize;
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Default, Debug)]
 // #[serde(rename_all = "camelCase")]
 pub struct GetDownloadUrl {
     // The file code
@@ -25,14 +23,5 @@ impl GetDownloadUrl {
     pub fn password(&mut self, password: impl Into<String>) -> &mut Self {
         self.password = password.into();
         self
-    }
-}
-
-impl Default for GetDownloadUrl {
-    fn default() -> Self {
-        Self {
-            file_code: String::new(),
-            password: String::new(),
-        }
     }
 }
