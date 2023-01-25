@@ -10,6 +10,7 @@ pub(crate) struct GetAccountResponseWrapper {
     pub message: Option<String>,
 }
 
+/// Response
 #[derive(Deserialize, Debug)]
 pub struct GetAccountResponse {
     #[serde(deserialize_with = "deserialize_usize_to_bool")]

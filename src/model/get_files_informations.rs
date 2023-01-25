@@ -15,6 +15,7 @@ pub(crate) struct GetFilesInformationsListResponse {
     pub list: Vec<GetFilesInformationsResponse>,
 }
 
+/// Response
 #[derive(Deserialize, Debug)]
 pub struct GetFilesInformationsResponse {
     pub file_code: String,
@@ -25,6 +26,7 @@ pub struct GetFilesInformationsResponse {
     pub error: Option<GetFilesInformationsError>,
 }
 
+/// Data of GetFilesInformationsResponse
 #[derive(Deserialize, Debug)]
 pub struct GetFilesInformationsError {
     pub code: usize,

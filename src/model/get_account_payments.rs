@@ -15,6 +15,7 @@ pub(crate) struct GetAccountPaymentsListResponseWrapper {
     pub list: Vec<GetAccountPaymentsResponse>,
 }
 
+/// Response
 #[derive(Deserialize, Debug)]
 pub struct GetAccountPaymentsResponse {
     pub created: String,

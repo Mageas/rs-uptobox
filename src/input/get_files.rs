@@ -1,30 +1,30 @@
+use serde::Serialize;
 use std::fmt;
 
-use serde::Serialize;
-
+/// Input
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct GetFiles {
-    // The folder path
+    /// The folder path
     path: String,
 
-    // Number of files to retrieve
+    /// Number of files to retrieve
     limit: usize,
 
-    // Sort the result by a column name
+    /// Sort the result by a column name
     order_by: OrderBy,
 
-    // Sort direction if orderBy is provided (ASC , DESC ) default : 'ASC'
+    /// Sort direction if orderBy is provided (ASC , DESC ) default : 'ASC'
     dir: OrderDir,
 
-    // Retrieve from the specified offset
+    /// Retrieve from the specified offset
     offset: usize,
 
-    // The search field column name
+    /// The search field column name
     #[serde(skip_serializing_if = "Option::is_none")]
     search_field: Option<OrderBy>,
 
-    // Search content
+    /// Search content
     #[serde(skip_serializing_if = "Option::is_none")]
     search: Option<String>,
 }
@@ -58,7 +58,7 @@ impl fmt::Display for OrderDir {
 }
 
 impl GetFiles {
-    /// Create a new GetFiles
+    /// Create a new instance
     pub fn new(path: impl Into<String>) -> Self {
         Self {
             path: path.into(),
@@ -66,31 +66,31 @@ impl GetFiles {
         }
     }
 
-    // Set the limit of files to retrieve
+    /// Set the limit of files to retrieve
     pub fn limit(&mut self, limit: usize) -> &mut Self {
         self.limit = limit;
         self
     }
 
-    // Set the offset of the directory
+    /// Set the offset of the directory
     pub fn offset(&mut self, offset: usize) -> &mut Self {
         self.offset = offset;
         self
     }
 
-    // Set the order column of the directory
+    /// Set the order column of the directory
     pub fn order_by(&mut self, order_by: OrderBy) -> &mut Self {
         self.order_by = order_by;
         self
     }
 
-    // Set the order direction of the directory
+    /// Set the order direction of the directory
     pub fn order_dir(&mut self, order_dir: OrderDir) -> &mut Self {
         self.dir = order_dir;
         self
     }
 
-    // Set the search
+    /// Set the search
     pub fn search(&mut self, search_field: OrderBy, search: impl Into<String>) -> &mut Self {
         let _ = self.search_field.insert(search_field);
         let _ = self.search.insert(search.into());
@@ -101,7 +101,7 @@ impl GetFiles {
 impl Default for GetFiles {
     fn default() -> Self {
         Self {
-            path: "//".into(),
+            path: "///".into(),
             limit: 100,
             offset: 0,
             order_by: OrderBy::FileName,

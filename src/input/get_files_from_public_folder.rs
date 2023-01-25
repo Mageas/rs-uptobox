@@ -1,23 +1,24 @@
 use serde::Serialize;
 
+/// Input
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct GetFilesFromPublicFolder {
-    // The folder id
+    /// The folder id
     folder: usize,
 
-    // The folder hash
+    /// The folder hash
     hash: String,
 
-    // Number of files to retrieve
+    /// Number of files to retrieve
     limit: usize,
 
-    // Retrieve from the specified offset
+    /// Retrieve from the specified offset
     offset: usize,
 }
 
 impl GetFilesFromPublicFolder {
-    /// Create a new GetFiles
+    /// Create a new instance
     pub fn new(folder: usize, hash: impl Into<String>) -> Self {
         Self {
             folder,
@@ -26,13 +27,13 @@ impl GetFilesFromPublicFolder {
         }
     }
 
-    // Set the limit of files to retrieve
+    /// Set the limit of files to retrieve
     pub fn limit(&mut self, limit: usize) -> &mut Self {
         self.limit = limit;
         self
     }
 
-    // Set the offset of the directory
+    /// Set the offset of the directory
     pub fn offset(&mut self, offset: usize) -> &mut Self {
         self.offset = offset;
         self

@@ -10,6 +10,7 @@ pub(crate) struct GetDownloadUrlResponseWrapper {
     pub message: Option<String>,
 }
 
+/// Response
 #[derive(Deserialize, Debug)]
 #[serde(untagged)]
 pub enum GetDownloadUrlResponse {
@@ -17,12 +18,14 @@ pub enum GetDownloadUrlResponse {
     Wait(GetDownloadUrlWait),
 }
 
+/// Data of GetDownloadUrlResponse
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct GetDownloadUrlLink {
     pub dl_link: String,
 }
 
+/// Data of GetDownloadUrlResponse
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct GetDownloadUrlWait {

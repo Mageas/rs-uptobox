@@ -10,6 +10,7 @@ pub(crate) struct GetUploadUrlResponseWrapper {
     pub message: Option<String>,
 }
 
+/// Response
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct GetUploadUrlResponse {

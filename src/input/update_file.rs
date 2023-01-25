@@ -1,31 +1,32 @@
 use serde::Serialize;
 
+/// Input
 #[derive(Serialize, Debug)]
 pub struct UpdateFile {
-    // The file code
+    /// The file code
     file_code: String,
 
-    // New file name value
+    /// New file name value
     #[serde(skip_serializing_if = "Option::is_none")]
     new_name: Option<String>,
 
-    // New description vale
+    /// New description vale
     #[serde(skip_serializing_if = "Option::is_none")]
     description: Option<String>,
 
-    // New password value
+    /// New password value
     #[serde(skip_serializing_if = "Option::is_none")]
     password: Option<String>,
 
-    // New public status
+    /// New public status
     #[serde(skip_serializing_if = "Option::is_none")]
     public: Option<bool>,
 }
 
 impl UpdateFile {
-    /// Create a new UpdateFile
+    /// Create a new instance
     ///
-    /// 1 param is requiered for the request to succeed
+    /// **1 modifier is requiered for the request to succeed (eg. name, description)**
     pub fn new(file_code: impl Into<String>) -> Self {
         Self {
             file_code: file_code.into(),
@@ -34,8 +35,8 @@ impl UpdateFile {
     }
 
     /// Update the file name
-    pub fn new_name(&mut self, new_name: impl Into<String>) -> &mut Self {
-        let _ = self.new_name.insert(new_name.into());
+    pub fn name(&mut self, name: impl Into<String>) -> &mut Self {
+        let _ = self.new_name.insert(name.into());
         self
     }
 

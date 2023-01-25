@@ -16,6 +16,7 @@ pub(crate) struct GetFilesFromPublicFolderListResponse {
     pub list: Vec<GetFilesFromPublicFolderResponse>,
 }
 
+/// Response
 #[derive(Deserialize, Debug)]
 pub struct GetFilesFromPublicFolderResponse {
     pub file_name: String,

@@ -10,6 +10,7 @@ pub(crate) struct GetFilesResponseWrapper {
     pub message: Option<String>,
 }
 
+/// Response
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct GetFilesResponse {
@@ -21,6 +22,7 @@ pub struct GetFilesResponse {
     pub total_file_size: usize,
 }
 
+/// Data of GetFilesResponse
 #[derive(Deserialize, Debug)]
 pub struct GetFilesCurrentFolder {
     #[serde(rename = "fileCount")]
@@ -36,6 +38,7 @@ pub struct GetFilesCurrentFolder {
     pub total_file_size: usize,
 }
 
+/// Data of GetFilesResponse
 #[derive(Deserialize, Debug)]
 pub struct GetFilesFolders {
     pub fld_id: usize,
@@ -44,6 +47,7 @@ pub struct GetFilesFolders {
     pub name: String,
 }
 
+/// Data of GetFilesResponse
 #[derive(Deserialize, Debug)]
 pub struct GetFilesFiles {
     pub file_code: String,

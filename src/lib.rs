@@ -35,6 +35,7 @@ use model::get_upload_url::GetUploadUrlResponseWrapper;
 
 const BASE_URL: &str = "https://uptobox.com/api/";
 
+/// Uptobox client
 pub struct Uptobox {
     client: Client,
     key: &'static str,
