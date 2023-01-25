@@ -11,8 +11,6 @@ mod util;
 
 use util::deserialize;
 
-// TODO: Check if all fields are accessible with the public API
-
 pub use input::get_download_url::GetDownloadUrl;
 pub use input::get_files::{GetFiles, OrderBy, OrderDir};
 pub use input::get_files_from_public_folder::GetFilesFromPublicFolder;
