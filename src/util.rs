@@ -14,7 +14,7 @@ where
 {
     match serde_json::from_str::<T>(json) {
         Ok(r) => match r.status_code() {
-            0 => Ok(r),
+            0 | 16 | 39 => Ok(r),
             _ => match serde_json::from_str::<ErrorDeserialize>(json) {
                 Ok(r) => Err(Error::ParseResponse(
                     r.status_code,

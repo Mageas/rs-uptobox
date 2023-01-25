@@ -13,15 +13,18 @@ use util::deserialize;
 
 // TODO: Check if all fields are accessible with the public API
 
+pub use input::get_download_url::GetDownloadUrl;
 pub use input::get_files::{GetFiles, OrderBy, OrderDir};
 pub use input::get_files_from_public_folder::GetFilesFromPublicFolder;
 pub use input::update_file::UpdateFile;
+pub use model::get_download_url::GetDownloadUrlResponse;
 pub use model::get_files::GetFilesResponse;
 pub use model::get_files_from_public_folder::GetFilesFromPublicFolderResponse;
 pub use model::get_files_informations::GetFilesInformationsResponse;
 pub use model::get_upload_url::GetUploadUrlResponse;
 
 use model::generic::{GenericMessageResponseWrapper, GenericUpdatedResponseWrapper};
+use model::get_download_url::GetDownloadUrlResponseWrapper;
 use model::get_files::GetFilesResponseWrapper;
 use model::get_files_from_public_folder::GetFilesFromPublicFolderResponseWrapper;
 use model::get_files_informations::GetFilesInformationsResponseWrapper;
@@ -34,6 +37,106 @@ pub struct Uptobox {
     key: &'static str,
 }
 
+/// Generate a download link
+impl Uptobox {
+    /// Get a waiting token
+    ///
+    /// If you are a premium user, it returns the link instead of the waiting token
+    pub async fn get_download_url(
+        &self,
+        get_waiting_token: GetDownloadUrl,
+    ) -> UptoboxResult<GetDownloadUrlResponse> {
+        let response = self
+            .get(
+                "link",
+                serde_json::to_value(get_waiting_token).map_err(Error::ParseInput)?,
+            )
+            .await?;
+
+        deserialize::<GetDownloadUrlResponseWrapper>(&response).map(|r| r.data)
+    }
+
+    /// Get the download link with a waiting_token
+    pub async fn get_download_url_waiting_token(
+        &self,
+        file_code: impl Into<String>,
+        waiting_token: impl Into<String>,
+    ) -> UptoboxResult<GetDownloadUrlResponse> {
+        let response = self
+            .get(
+                "link",
+                json!({ "file_code": file_code.into(), "waitingToken": waiting_token.into() }),
+            )
+            .await?;
+
+        deserialize::<GetDownloadUrlResponseWrapper>(&response).map(|r| r.data)
+    }
+
+    /// Get a waiting token without an account
+    pub async fn public_get_download_url(
+        &self,
+        get_waiting_token: GetDownloadUrl,
+    ) -> UptoboxResult<GetDownloadUrlResponse> {
+        let response = self
+            .public_get(
+                "link",
+                serde_json::to_value(get_waiting_token).map_err(Error::ParseInput)?,
+            )
+            .await?;
+
+        deserialize::<GetDownloadUrlResponseWrapper>(&response).map(|r| r.data)
+    }
+
+    /// Get the download link with a waiting_token without an account
+    pub async fn public_get_download_url_waiting_token(
+        &self,
+        file_code: impl Into<String>,
+        waiting_token: impl Into<String>,
+    ) -> UptoboxResult<GetDownloadUrlResponse> {
+        let response = self
+            .public_get(
+                "link",
+                json!({ "file_code": file_code.into(), "waitingToken": waiting_token.into() }),
+            )
+            .await?;
+
+        deserialize::<GetDownloadUrlResponseWrapper>(&response).map(|r| r.data)
+    }
+}
+
+/// Files
+impl Uptobox {
+    /// Retrieve file informations
+    ///
+    /// For each file code provided, you can add a password separated by ':' For example : filecode1:password1,filecode2:password2
+    pub async fn get_files_informations(
+        &self,
+        file_codes: Vec<&str>,
+    ) -> UptoboxResult<Vec<GetFilesInformationsResponse>> {
+        let response = self
+            .public_get("user/public", json!({ "fileCodes": file_codes.join(",") }))
+            .await?;
+
+        deserialize::<GetFilesInformationsResponseWrapper>(&response).map(|r| r.data.list)
+    }
+
+    /// Retrieve files in public folder
+    pub async fn get_files_from_public_folder(
+        &self,
+        get_files_from_public_folder: &GetFilesFromPublicFolder,
+    ) -> UptoboxResult<Vec<GetFilesFromPublicFolderResponse>> {
+        let response = self
+            .public_get(
+                "user/public",
+                serde_json::to_value(get_files_from_public_folder).map_err(Error::ParseInput)?,
+            )
+            .await?;
+
+        deserialize::<GetFilesFromPublicFolderResponseWrapper>(&response).map(|r| r.data.list)
+    }
+}
+
+/// File Management
 impl Uptobox {
     /// Get files
     ///
@@ -45,8 +148,6 @@ impl Uptobox {
                 serde_json::to_value(get_files).map_err(Error::ParseInput)?,
             )
             .await?;
-
-        dbg!(&response);
 
         deserialize::<GetFilesResponseWrapper>(&response).map(|r| r.data)
     }
@@ -174,36 +275,10 @@ impl Uptobox {
 
         deserialize::<GenericMessageResponseWrapper>(&response).map(|r| r.data)
     }
+}
 
-    /// Retrieve file informations
-    ///
-    /// For each file code provided, you can add a password separated by ':' For example : filecode1:password1,filecode2:password2
-    pub async fn get_files_informations(
-        &self,
-        file_codes: Vec<&str>,
-    ) -> UptoboxResult<Vec<GetFilesInformationsResponse>> {
-        let response = self
-            .public_get("user/public", json!({ "fileCodes": file_codes.join(",") }))
-            .await?;
-
-        deserialize::<GetFilesInformationsResponseWrapper>(&response).map(|r| r.data.list)
-    }
-
-    /// Retrieve files in public folder
-    pub async fn get_files_from_public_folder(
-        &self,
-        get_files_from_public_folder: &GetFilesFromPublicFolder,
-    ) -> UptoboxResult<Vec<GetFilesFromPublicFolderResponse>> {
-        let response = self
-            .public_get(
-                "user/public",
-                serde_json::to_value(get_files_from_public_folder).map_err(Error::ParseInput)?,
-            )
-            .await?;
-
-        deserialize::<GetFilesFromPublicFolderResponseWrapper>(&response).map(|r| r.data.list)
-    }
-
+/// Upload
+impl Uptobox {
     /// Retrieve an upload url
     pub async fn get_upload_url(&self) -> UptoboxResult<GetUploadUrlResponse> {
         let response = self.get("upload", json!({})).await?;
@@ -212,6 +287,7 @@ impl Uptobox {
     }
 }
 
+/// Internal
 impl Uptobox {
     pub fn new(key: &'static str) -> Self {
         Self {
