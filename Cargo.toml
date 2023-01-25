@@ -2,6 +2,12 @@
 name = "rs-uptobox"
 version = "0.1.0"
 edition = "2021"
+authors = ["Mageas <dev@mageas.net>"]
+description = "Wrapper for uptobox.com"
+documentation = "https://docs.rs/rs-uptobox"
+keywords = ["uptobox"]
+license = "GPL-3.0"
+repository = "https://gitea.heartnerds.org/Mageas/rs-uptobox/"
 
 [dependencies]
 json-patch = "0.3.0"
