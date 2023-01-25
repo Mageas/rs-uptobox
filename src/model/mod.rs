@@ -1,4 +1,6 @@
 pub mod generic;
+pub mod get_account;
+pub mod get_account_payments;
 pub mod get_download_url;
 pub mod get_files;
 pub mod get_files_from_public_folder;

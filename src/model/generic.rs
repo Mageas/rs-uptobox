@@ -24,6 +24,13 @@ pub(crate) struct GenericMessageResponseWrapper {
     pub message: Option<String>,
 }
 
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct GenericEmpyDataResponseWrapper {
+    pub status_code: usize,
+    pub message: Option<String>,
+}
+
 impl DeserializeCheck for GenericMessageResponseWrapper {
     fn status_code(&self) -> usize {
         self.status_code
@@ -31,6 +38,12 @@ impl DeserializeCheck for GenericMessageResponseWrapper {
 }
 
 impl DeserializeCheck for GenericUpdatedResponseWrapper {
+    fn status_code(&self) -> usize {
+        self.status_code
+    }
+}
+
+impl DeserializeCheck for GenericEmpyDataResponseWrapper {
     fn status_code(&self) -> usize {
         self.status_code
     }

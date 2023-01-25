@@ -17,13 +17,18 @@ pub use input::get_download_url::GetDownloadUrl;
 pub use input::get_files::{GetFiles, OrderBy, OrderDir};
 pub use input::get_files_from_public_folder::GetFilesFromPublicFolder;
 pub use input::update_file::UpdateFile;
+pub use model::get_account::GetAccountResponse;
+pub use model::get_account_payments::GetAccountPaymentsResponse;
 pub use model::get_download_url::GetDownloadUrlResponse;
 pub use model::get_files::GetFilesResponse;
 pub use model::get_files_from_public_folder::GetFilesFromPublicFolderResponse;
 pub use model::get_files_informations::GetFilesInformationsResponse;
 pub use model::get_upload_url::GetUploadUrlResponse;
 
+use model::generic::GenericEmpyDataResponseWrapper;
 use model::generic::{GenericMessageResponseWrapper, GenericUpdatedResponseWrapper};
+use model::get_account::GetAccountResponseWrapper;
+use model::get_account_payments::GetAccountPaymentsResponseWrapper;
 use model::get_download_url::GetDownloadUrlResponseWrapper;
 use model::get_files::GetFilesResponseWrapper;
 use model::get_files_from_public_folder::GetFilesFromPublicFolderResponseWrapper;
@@ -35,6 +40,41 @@ const BASE_URL: &str = "https://uptobox.com/api/";
 pub struct Uptobox {
     client: Client,
     key: &'static str,
+}
+
+/// My account
+impl Uptobox {
+    /// Retrieve user data
+    pub async fn get_account(&self) -> UptoboxResult<GetAccountResponse> {
+        let response = self.get("user/me", json!({})).await?;
+
+        deserialize::<GetAccountResponseWrapper>(&response).map(|r| r.data)
+    }
+
+    /// Update Direct Download
+    pub async fn update_account_dd(&self, ssl: bool) -> UptoboxResult {
+        let response = self
+            .patch("user/settings", json!({ "directDownload": ssl as usize }))
+            .await?;
+
+        deserialize::<GenericEmpyDataResponseWrapper>(&response).map(|_| ())
+    }
+
+    /// Update Direct Download
+    pub async fn update_account_security_lock(&self, ssl: bool) -> UptoboxResult {
+        let response = self
+            .patch("user/securityLock", json!({ "securityLock": ssl as usize }))
+            .await?;
+
+        deserialize::<GenericEmpyDataResponseWrapper>(&response).map(|_| ())
+    }
+
+    /// Retrieve user payments
+    pub async fn get_account_payments(&self) -> UptoboxResult<Vec<GetAccountPaymentsResponse>> {
+        let response = self.get("user/payments/get", json!({})).await?;
+
+        deserialize::<GetAccountPaymentsResponseWrapper>(&response).map(|r| r.data.list)
+    }
 }
 
 /// Generate a download link
