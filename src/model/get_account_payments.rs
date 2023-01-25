@@ -17,12 +17,12 @@ pub(crate) struct GetAccountPaymentsListResponseWrapper {
 
 #[derive(Deserialize, Debug)]
 pub struct GetAccountPaymentsResponse {
-    created: String,
-    status: String,
-    amount: String,
-    days: usize,
+    pub created: String,
+    pub status: String,
+    pub amount: String,
+    pub days: usize,
     #[serde(rename = "type")]
-    _type: String,
+    pub _type: String,
 }
 
 impl DeserializeCheck for GetAccountPaymentsResponseWrapper {
