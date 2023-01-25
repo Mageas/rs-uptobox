@@ -408,19 +408,19 @@ impl Uptobox {
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
-    #[error("Parse the input")]
+    #[error("Unable to parse the input")]
     ParseInput(#[source] serde_json::Error),
 
-    #[error("status_code: {0}, message: {1}, data: {2}")]
+    #[error("Unable to parse the response: status_code: {0}, message: {1}, data: {2}")]
     ParseResponse(usize, String, String),
 
-    #[error("Unable to parse the response with an unknown error")]
+    #[error("Unable to parse the response, unknown error")]
     UnknownParseResponse(#[source] serde_json::Error),
 
     #[error("Bad response")]
     HttpRequest(#[source] reqwest::Error),
 
-    #[error("Got response {0}")]
+    #[error("Bad response with status code: {0}")]
     HttpResponseCode(u16),
 }
 
