@@ -153,7 +153,7 @@ impl Uptobox {
         file_codes: Vec<&str>,
     ) -> UptoboxResult<Vec<GetFilesInformationsResponse>> {
         let response = self
-            .public_get("user/public", json!({ "fileCodes": file_codes.join(",") }))
+            .public_get("link/info", json!({ "fileCodes": file_codes.join(",") }))
             .await?;
 
         deserialize::<GetFilesInformationsResponseWrapper>(&response).map(|r| r.data.list)
