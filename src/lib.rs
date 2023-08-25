@@ -17,10 +17,10 @@ pub use input::get_files_from_public_folder::GetFilesFromPublicFolder;
 pub use input::update_file::UpdateFile;
 pub use model::get_account::GetAccountResponse;
 pub use model::get_account_payments::GetAccountPaymentsResponse;
-pub use model::get_download_url::GetDownloadUrlResponse;
-pub use model::get_files::GetFilesResponse;
+pub use model::get_download_url::{GetDownloadUrlResponse, GetDownloadUrlLink, GetDownloadUrlWait};
+pub use model::get_files::{GetFilesResponse, GetFilesCurrentFolder, GetFilesFolders, GetFilesFiles};
 pub use model::get_files_from_public_folder::GetFilesFromPublicFolderResponse;
-pub use model::get_files_informations::GetFilesInformationsResponse;
+pub use model::get_files_informations::{GetFilesInformationsResponse, GetFilesInformationsError};
 pub use model::get_upload_url::GetUploadUrlResponse;
 
 use model::generic::GenericEmpyDataResponseWrapper;
