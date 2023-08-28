@@ -17,7 +17,7 @@ pub struct GetAccountResponse {
     pub premium: bool,
     pub login: String,
     pub email: String,
-    pub point: String,
+    pub point: f32,
     pub premium_expire: String,
     #[serde(deserialize_with = "deserialize_usize_to_bool")]
     #[serde(rename = "securityLock")]
